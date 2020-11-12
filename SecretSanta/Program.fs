@@ -3,13 +3,18 @@ open System
 open System.Text.Json
 open System.IO
 
-type participantDetails = {Name: string; Email:string}
+type participantDetails = {Name: string;}
 type pair = {Sender:participantDetails; Receiver:participantDetails;}
-type mail = {Email:string;Subject:string;Text:string}
 
-let participantDetails = [ {Name="Georg";Email="test@testmail.com"}; {Name="Birgit";Email="test@testmail.com"}; {Name="Philipp";Email="test@testmail.com"}; {Name="Janni";Email="test@testmail.com"}; {Name="Simon";Email="test@testmail.com"}; {Name="Miri";Email="test@testmail.com"}; {Name="Theresa";Email="test@testmail.com"} ]
+let participantsFile = @"C:\tmp\participants.txt"
 
-let validPairs = Seq.allPairs participantDetails participantDetails |> Seq.filter (fun item -> (fst item) <> (snd item)) |> Seq.map (fun item -> {Sender=(fst item);Receiver=(snd item);})
+let getAllValidPairs participantDetails = Seq.allPairs participantDetails participantDetails |> Seq.filter (fun item -> (fst item) <> (snd item)) |> Seq.map (fun item -> {Sender=(fst item);Receiver=(snd item);})
+
+let getParticipants (filePath:string) = seq {
+    use sr = new StreamReader (filePath)
+    while not sr.EndOfStream do
+        yield {Name=sr.ReadLine ()}
+}
 
 let getRandomElement list = 
     let random = System.Random()
@@ -31,6 +36,15 @@ let rec getValidRandomPairings allPossiblePairs participants =
 
 [<EntryPoint>]
 let main argv =
-    let random = getValidRandomPairings validPairs participantDetails
+    // let random = getValidRandomPairings validPairs participantDetails
+
+    let participants = getParticipants participantsFile
+    let random = getValidRandomPairings (getAllValidPairs participants ) participants
+    let json = JsonSerializer.Serialize random
+
+    File.WriteAllText (@"C:\tmp\combined.json", json) |> ignore
+
+    printfn "%A" random
+
 
     0
