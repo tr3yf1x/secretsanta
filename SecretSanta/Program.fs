@@ -1,7 +1,6 @@
 ﻿// Learn more about F# at http://fsharp.org
 open System
 open System.Text.Json
-open System.Net.Mail
 open System.IO
 
 type participantDetails = {Name: string; Email:string}
