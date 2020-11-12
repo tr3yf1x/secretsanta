@@ -8,6 +8,7 @@ open System.Security.Cryptography
 type participantDetails = {Name: string;}
 type pair = {Sender:participantDetails; Receiver:participantDetails;}
 type webpublishPair = {Pair:pair; FileName:string}
+type anonymisedPair = {Who:participantDetails;Link:string}
 
 let participantsFile = @"C:\tmp\participants.txt"
 
@@ -45,31 +46,81 @@ let generateFileName (input : string) =
 let addFileName pair =
     {Pair=pair;FileName=(generateFileName pair.Sender.Name)}
 
+let getStyleContent = 
+    let path = @"C:\tmp\style.css"
+
+    File.ReadAllLines path |> String.concat ""
+
 let generateWebsiteContent pair = 
-    let title = sprintf "Skandal!!! %A beschenkt ..." pair.Sender.Name
-    let stylesheetPath = @"style.css"
-    let header = sprintf "<h1>Hallo %A,</h1>" pair.Sender.Name
-    let text = sprintf "Du darfst <i>%A</i> eine schöne Kleinigkeit schenken" pair.Receiver.Name
-    let body = sprintf "%A%A" header text
-    sprintf "<!DOCTYPE html><html lang='de'><head><title>%A</title><link rel='stylesheet' href='%A'></head><body>%A</body></html>" title stylesheetPath body
+    let title = sprintf "Skandal!!! %s beschenkt ..." pair.Sender.Name
+    let style = getStyleContent
+
+    let body = sprintf "<div class='cracker' id='cracker'>\
+        <div class='cracker-message'>\
+            <div class='cracker-message__inner'>\
+            %s\
+            <br>\
+            beschenke doch\
+            <br>\
+            %s\
+            </div>\
+        </div>\
+        <div class='cracker-left'>\
+            <div class='cracker-left-inner'>\
+            <div class='cracker-left__mask-top'></div>\
+            <div class='cracker-left__mask-bottom'></div>\
+            <div class='cracker-left__tail'></div>\
+            <div class='cracker-left__end'></div>\
+            <div class='cracker-left__body'></div>\
+            <div class='cracker-left-zigzag'>\
+                <div class='cracker-left-zigzag__item'></div>\
+                <div class='cracker-left-zigzag__item'></div>\
+                <div class='cracker-left-zigzag__item'></div>\
+                <div class='cracker-left-zigzag__item'></div>\
+                <div class='cracker-left-zigzag__item'></div>\
+            </div>\
+            </div>\
+        </div>\
+        <div class='cracker-right'>\
+            <div class='cracker-right-inner'>\
+            <div class='cracker-right__mask-top'></div>\
+            <div class='cracker-right__mask-bottom'></div>\
+            <div class='cracker-right__tail'></div>\
+            <div class='cracker-right__end'></div>\
+            <div class='cracker-right__body'></div>\
+            <div class='cracker-right-zigzag'>\
+                <div class='cracker-right-zigzag__item'></div>\
+                <div class='cracker-right-zigzag__item'></div>\
+                <div class='cracker-right-zigzag__item'></div>\
+                <div class='cracker-right-zigzag__item'></div>\
+                <div class='cracker-right-zigzag__item'></div>\
+            </div>\
+            </div>\
+        </div>\
+        </div>\
+        <p class='hover-me-text'>Neugierig? Cracker antippen</p>" pair.Sender.Name pair.Receiver.Name
+
+    (sprintf "<!DOCTYPE html><html lang='de'><head><title>%s</title><style>%s</style></head><body>%s</body></html>" title style body)
 
 let buildWebsite webpublishPair = 
     let basePath = @"C:\tmp\"
-    let filePath = sprintf "%A.%A.html" basePath webpublishPair.FileName
+    let filePath = sprintf "%s%s.html" basePath webpublishPair.FileName
 
-    File.WriteAllText (filePath, (generateWebsiteContent webpublishPair.Pair)) |> ignore
+    File.WriteAllText (filePath, (generateWebsiteContent webpublishPair.Pair))
 
+let buildLinkList pair = 
+    let basePath = @"http://damnyouareawesome.com/wichteln/"
+    let link = sprintf "%s%s.html" basePath pair.FileName
+    {Who=pair.Pair.Sender;Link=link}
 
 [<EntryPoint>]
 let main argv =
     let participants = getParticipants participantsFile
     let pairings = getValidRandomPairings (getAllValidPairs participants ) participants |> Seq.map addFileName 
-    let json = pairings |> JsonSerializer.Serialize
 
-    File.WriteAllText (@"C:\tmp\combined.json", json) |> ignore
+    pairings |> Seq.iter buildWebsite
+    let json = pairings |>  Seq.map buildLinkList |> JsonSerializer.Serialize
 
-    pairings |> Seq.map buildWebsite
-
-
+    File.WriteAllText (@"C:\tmp\links.json", json) |> ignore
 
     0
