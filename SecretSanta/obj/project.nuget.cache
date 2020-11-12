@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "q16uS5kbd11uGJjQTD8FBwdF6numx9W2fzoP1IBDdWBG/VklGFSIP6B6Mx+4hC2hi/lvjrKvikJIfkOPUJUTbw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\tr3yf\\source\\repos\\SecretSanta\\SecretSanta\\SecretSanta.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\tr3yf\\.nuget\\packages\\fsharp.core\\5.0.0\\fsharp.core.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
