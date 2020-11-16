@@ -4,6 +4,7 @@ open System.Text.Json
 open System.IO
 open System.Text.Encodings
 open System.Security.Cryptography
+open FSharp.Collections
 
 type participantDetails = {Name: string;}
 type pair = {Sender:participantDetails; Receiver:participantDetails;}
@@ -30,6 +31,7 @@ let rec randomPairings list =
     let randomPair = getRandomElement list
     let remainingPairs = withoutThisPair list randomPair
 
+    if(((remainingPairs |> Seq.length) % 10) = 0 ) then printfn "%A" (remainingPairs |> Seq.length)
     if (remainingPairs |> Seq.length) = 0 then  [randomPair]
     else randomPair :: (randomPairings remainingPairs)
 
@@ -103,7 +105,7 @@ let generateWebsiteContent pair =
     (sprintf "<!DOCTYPE html><html lang='de'><head><title>%s</title><style>%s</style></head><body>%s</body></html>" title style body)
 
 let buildWebsite webpublishPair = 
-    let basePath = @"C:\tmp\"
+    let basePath = @"C:\tmp\subsites\"
     let filePath = sprintf "%s%s.html" basePath webpublishPair.FileName
 
     File.WriteAllText (filePath, (generateWebsiteContent webpublishPair.Pair))
@@ -115,6 +117,7 @@ let buildLinkList pair =
 
 [<EntryPoint>]
 let main argv =
+    printfn "%A: start" DateTime.Now
     let participants = getParticipants participantsFile
     let pairings = getValidRandomPairings (getAllValidPairs participants ) participants |> Seq.map addFileName 
 
@@ -122,5 +125,6 @@ let main argv =
     let json = pairings |>  Seq.map buildLinkList |> JsonSerializer.Serialize
 
     File.WriteAllText (@"C:\tmp\links.json", json) |> ignore
+    printfn "%A: end" DateTime.Now
 
     0
