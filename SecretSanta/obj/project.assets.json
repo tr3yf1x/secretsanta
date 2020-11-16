@@ -2,6 +2,18 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
+      "FSharp.Collections.ParallelSeq/1.1.4": {
+        "type": "package",
+        "dependencies": {
+          "FSharp.Core": "4.7.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/FSharp.Collections.ParallelSeq.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/FSharp.Collections.ParallelSeq.dll": {}
+        }
+      },
       "FSharp.Core/5.0.0": {
         "type": "package",
         "compile": {
@@ -55,6 +67,22 @@
     }
   },
   "libraries": {
+    "FSharp.Collections.ParallelSeq/1.1.4": {
+      "sha512": "JI6R4TK+TJ0uswIpkx/IExXNuRQFL24hznnB+Q5fXnqpvc3Wob72o3TDm5ZHbKuz9B2+9uGIbowzXH1dhZs6fw==",
+      "type": "package",
+      "path": "fsharp.collections.parallelseq/1.1.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "fsharp.collections.parallelseq.1.1.4.nupkg.sha512",
+        "fsharp.collections.parallelseq.nuspec",
+        "lib/net45/FSharp.Collections.ParallelSeq.dll",
+        "lib/net45/FSharp.Collections.ParallelSeq.xml",
+        "lib/netstandard2.0/FSharp.Collections.ParallelSeq.dll",
+        "lib/netstandard2.0/FSharp.Collections.ParallelSeq.xml",
+        "logo.png"
+      ]
+    },
     "FSharp.Core/5.0.0": {
       "sha512": "iHoYXA0VaSQUONGENB1aVafjDDZDZpwu39MtaRCTrmwFW/cTcK0b2yKNVYneFHJMc3ChtsSoM9lNtJ1dYXkHfA==",
       "type": "package",
@@ -85,6 +113,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
+      "FSharp.Collections.ParallelSeq >= 1.1.4",
       "FSharp.Core >= 5.0.0"
     ]
   },
@@ -126,6 +155,11 @@
       "netcoreapp3.1": {
         "targetAlias": "netcoreapp3.1",
         "dependencies": {
+          "FSharp.Collections.ParallelSeq": {
+            "target": "Package",
+            "version": "[1.1.4, )",
+            "generatePathProperty": true
+          },
           "FSharp.Core": {
             "target": "Package",
             "version": "[5.0.0, )",

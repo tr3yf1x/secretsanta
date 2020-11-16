@@ -5,13 +5,17 @@ open System.IO
 open System.Text.Encodings
 open System.Security.Cryptography
 open FSharp.Collections
+open FSharp.Collections.ParallelSeq
+open System.Numerics
+open System.Numerics
+open Microsoft.FSharp.Core.Operators
 
 type participantDetails = {Name: string;}
 type pair = {Sender:participantDetails; Receiver:participantDetails;}
 type webpublishPair = {Pair:pair; FileName:string}
 type anonymisedPair = {Who:participantDetails;Link:string}
 
-let participantsFile = @"C:\tmp\participants.txt"
+let participantsFile = @"C:\tmp\participants_huge.txt"
 
 let getAllValidPairs participantDetails = Seq.allPairs participantDetails participantDetails |> Seq.filter (fun item -> (fst item) <> (snd item)) |> Seq.map (fun item -> {Sender=(fst item);Receiver=(snd item);})
 
@@ -31,7 +35,6 @@ let rec randomPairings list =
     let randomPair = getRandomElement list
     let remainingPairs = withoutThisPair list randomPair
 
-    if(((remainingPairs |> Seq.length) % 10) = 0 ) then printfn "%A" (remainingPairs |> Seq.length)
     if (remainingPairs |> Seq.length) = 0 then  [randomPair]
     else randomPair :: (randomPairings remainingPairs)
 
@@ -40,91 +43,45 @@ let rec getValidRandomPairings allPossiblePairs participants =
     if ((random |> Seq.length) = (participants |> Seq.length)) then random
     else getValidRandomPairings allPossiblePairs participants
 
-let generateFileName (input : string) = 
-    let hashing = SHA256.Create()
-    let hashed = hashing.ComputeHash (System.Text.Encoding.Default.GetBytes input) |> Seq.map (fun c -> c.ToString("X2"))
-    String.concat "" hashed
+let calcIndex numberOfParticpants participant offset  =
+    let baseAddress = (numberOfParticpants * (participant - 1)) // Set Pointer to participant
+    let baseOffset = (participant - 1) // Set Offset to participant gifts participant
+    let combinedOffset = baseOffset + offset // Add run-specific Offset
+    let fittingOffset = if (combinedOffset >= numberOfParticpants) then combinedOffset - numberOfParticpants else combinedOffset
+    baseAddress + fittingOffset
+     
+let getIndex numberOfParticipants =
+    let random = System.Random()
+    let offset = random.Next(1,(numberOfParticipants - 1))
 
-let addFileName pair =
-    {Pair=pair;FileName=(generateFileName pair.Sender.Name)}
+    printfn "Offset: %i ##########" offset
+    [1 .. numberOfParticipants] |> PSeq.map (fun item -> calcIndex numberOfParticipants item offset)
 
-let getStyleContent = 
-    let path = @"C:\tmp\style.css"
+let classicMode participants =
+    let start = DateTime.Now
+    getValidRandomPairings (getAllValidPairs participants ) participants 
+    let duration = (DateTime.Now - start)
+    printfn "Classic: %A for %i Elements"  duration (participants |> Seq.length)
+    duration
 
-    File.ReadAllLines path |> String.concat ""
-
-let generateWebsiteContent pair = 
-    let title = sprintf "Skandal!!! %s beschenkt ..." pair.Sender.Name
-    let style = getStyleContent
-
-    let body = sprintf "<div class='cracker' id='cracker'>\
-        <div class='cracker-message'>\
-            <div class='cracker-message__inner'>\
-            %s\
-            <br>\
-            beschenke doch\
-            <br>\
-            %s\
-            </div>\
-        </div>\
-        <div class='cracker-left'>\
-            <div class='cracker-left-inner'>\
-            <div class='cracker-left__mask-top'></div>\
-            <div class='cracker-left__mask-bottom'></div>\
-            <div class='cracker-left__tail'></div>\
-            <div class='cracker-left__end'></div>\
-            <div class='cracker-left__body'></div>\
-            <div class='cracker-left-zigzag'>\
-                <div class='cracker-left-zigzag__item'></div>\
-                <div class='cracker-left-zigzag__item'></div>\
-                <div class='cracker-left-zigzag__item'></div>\
-                <div class='cracker-left-zigzag__item'></div>\
-                <div class='cracker-left-zigzag__item'></div>\
-            </div>\
-            </div>\
-        </div>\
-        <div class='cracker-right'>\
-            <div class='cracker-right-inner'>\
-            <div class='cracker-right__mask-top'></div>\
-            <div class='cracker-right__mask-bottom'></div>\
-            <div class='cracker-right__tail'></div>\
-            <div class='cracker-right__end'></div>\
-            <div class='cracker-right__body'></div>\
-            <div class='cracker-right-zigzag'>\
-                <div class='cracker-right-zigzag__item'></div>\
-                <div class='cracker-right-zigzag__item'></div>\
-                <div class='cracker-right-zigzag__item'></div>\
-                <div class='cracker-right-zigzag__item'></div>\
-                <div class='cracker-right-zigzag__item'></div>\
-            </div>\
-            </div>\
-        </div>\
-        </div>\
-        <p class='hover-me-text'>Neugierig? Cracker antippen</p>" pair.Sender.Name pair.Receiver.Name
-
-    (sprintf "<!DOCTYPE html><html lang='de'><head><title>%s</title><style>%s</style></head><body>%s</body></html>" title style body)
-
-let buildWebsite webpublishPair = 
-    let basePath = @"C:\tmp\subsites\"
-    let filePath = sprintf "%s%s.html" basePath webpublishPair.FileName
-
-    File.WriteAllText (filePath, (generateWebsiteContent webpublishPair.Pair))
-
-let buildLinkList pair = 
-    let basePath = @"http://damnyouareawesome.com/wichteln/"
-    let link = sprintf "%s%s.html" basePath pair.FileName
-    {Who=pair.Pair.Sender;Link=link}
+let calcedMode participants = 
+    let start = DateTime.Now
+    let listOfIndexes = getIndex (participants |> PSeq.length)
+    let allPairs = (participants |> Seq.allPairs participants)  |> PSeq.map (fun item -> {Sender=(fst item);Receiver=(snd item)}) 
+    listOfIndexes |> PSeq.map (fun index -> (allPairs |> Seq.item index))
+    let duration = (DateTime.Now - start)
+    printfn "Calced: %A for %i Elements" duration   (participants |> Seq.length)
+    duration
 
 [<EntryPoint>]
 let main argv =
-    printfn "%A: start" DateTime.Now
-    let participants = getParticipants participantsFile
-    let pairings = getValidRandomPairings (getAllValidPairs participants ) participants |> Seq.map addFileName 
+    // let participants = getParticipants participantsFile
+    // let participants = [1 .. 83166711] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
+    let participants = [1 .. 83166711] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
 
-    pairings |> Seq.iter buildWebsite
-    let json = pairings |>  Seq.map buildLinkList |> JsonSerializer.Serialize
+    let calced = calcedMode participants
+    // let calced = calcedMode participants
+    // let factorCalced = classic / calced
 
-    File.WriteAllText (@"C:\tmp\links.json", json) |> ignore
-    printfn "%A: end" DateTime.Now
-
+    // printfn "%A" factorCalced
     0

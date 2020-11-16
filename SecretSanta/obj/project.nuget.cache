@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "q16uS5kbd11uGJjQTD8FBwdF6numx9W2fzoP1IBDdWBG/VklGFSIP6B6Mx+4hC2hi/lvjrKvikJIfkOPUJUTbw==",
+  "dgSpecHash": "F7E4xZ3sbGcFv/kwFv5ZVIRdSnjLrxtL6T8sSd2kTZVecnOGjfC3KqquVqUtDifHSfqyZ+VYFt5NNmd2Mx089w==",
   "success": true,
   "projectFilePath": "C:\\Users\\tr3yf\\source\\repos\\SecretSanta\\SecretSanta\\SecretSanta.fsproj",
   "expectedPackageFiles": [
+    "C:\\Users\\tr3yf\\.nuget\\packages\\fsharp.collections.parallelseq\\1.1.4\\fsharp.collections.parallelseq.1.1.4.nupkg.sha512",
     "C:\\Users\\tr3yf\\.nuget\\packages\\fsharp.core\\5.0.0\\fsharp.core.5.0.0.nupkg.sha512"
   ],
   "logs": []
