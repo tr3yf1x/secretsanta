@@ -77,7 +77,9 @@ let calcedMode participants =
 let main argv =
     // let participants = getParticipants participantsFile
     // let participants = [1 .. 83166711] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
-    let participants = [1 .. 83166711] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
+    // let participants = [1 .. 83166711] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
+    let participants = [1 .. 13124737] |> PSeq.map (fun item -> {Name=(sprintf "%A" item)})
+
 
     let calced = calcedMode participants
     // let calced = calcedMode participants
